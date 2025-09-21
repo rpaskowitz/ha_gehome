@@ -21,6 +21,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry, asyn
     _LOGGER.debug('Adding GE Binary Sensor Entities')
     coordinator: GeHomeUpdateCoordinator = hass.data[DOMAIN][config_entry.entry_id]
     registry = er.async_get(hass)
+    _LOGGER.debug(f'Binary sensor coordinator initialized: {coordinator.initialized}')
 
     @callback
     def async_devices_discovered(apis: list[ApplianceApi]):
@@ -40,8 +41,10 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry, asyn
     #discovery directly, otherwise add a callback based on the
     #ready signal
     if coordinator.initialized:
+        _LOGGER.debug('Binary sensor coordinator already initialized, calling device discovery directly')
         async_devices_discovered(coordinator.appliance_apis.values())
     else:    
+        _LOGGER.debug('Binary sensor coordinator not ready, registering callback for ready signal')
         # add the ready signal and register the remove callback
         coordinator.add_signal_remove_callback(
             async_dispatcher_connect(hass, coordinator.signal_ready, async_devices_discovered))

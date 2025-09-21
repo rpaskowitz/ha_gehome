@@ -30,6 +30,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry, asyn
     _LOGGER.debug('Adding GE Home sensors')
     coordinator: GeHomeUpdateCoordinator = hass.data[DOMAIN][config_entry.entry_id]
     registry = er.async_get(hass)
+    _LOGGER.debug(f'Coordinator initialized: {coordinator.initialized}')
 
     # Get the platform
     platform = entity_platform.async_get_current_platform()
@@ -58,8 +59,10 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry, asyn
     #discovery directly, otherwise add a callback based on the
     #ready signal
     if coordinator.initialized:
+        _LOGGER.debug('Coordinator already initialized, calling device discovery directly')
         async_devices_discovered(coordinator.appliance_apis.values())
     else:
+        _LOGGER.debug('Coordinator not ready, registering callback for ready signal')
         # add the ready signal and register the remove callback
         coordinator.add_signal_remove_callback(
             async_dispatcher_connect(hass, coordinator.signal_ready, async_devices_discovered))
