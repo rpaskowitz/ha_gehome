@@ -131,14 +131,24 @@ class ApplianceApi:
     def build_entities_list(self) -> None:
         """Build the entities list, adding anything new."""
         from ..entities import GeErdEntity, GeErdButton
+        all_entities = self.get_all_entities()
+        _LOGGER.debug(f"Appliance {self.mac_addr}: Generated {len(all_entities)} total entities")
+        _LOGGER.debug(f"Appliance {self.mac_addr}: Known properties: {list(self.appliance.known_properties)}")
+        
         entities = [
-            e for e in self.get_all_entities()
+            e for e in all_entities
             if not isinstance(e, GeErdEntity) or isinstance(e, GeErdButton) or e.erd_code in self.appliance.known_properties
         ]
+        _LOGGER.debug(f"Appliance {self.mac_addr}: Filtered to {len(entities)} entities after known_properties check")
 
         for entity in entities:
             if entity.unique_id not in self._entities:
                 self._entities[entity.unique_id] = entity
+                _LOGGER.debug(f"Appliance {self.mac_addr}: Added entity {entity.unique_id} ({type(entity).__name__})")
+            else:
+                _LOGGER.debug(f"Appliance {self.mac_addr}: Skipped duplicate entity {entity.unique_id}")
+        
+        _LOGGER.debug(f"Appliance {self.mac_addr}: Final entity count: {len(self._entities)}")
 
     def try_get_erd_value(self, code: ErdCodeType):
         try:

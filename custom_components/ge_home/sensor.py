@@ -37,11 +37,18 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry, asyn
     @callback
     def async_devices_discovered(apis: list[ApplianceApi]):
         _LOGGER.debug(f'Found {len(apis):d} appliance APIs')
+        for api in apis:
+            _LOGGER.debug(f'API {api.mac_addr}: Has {len(api.entities)} total entities')
+            sensor_entities = [e for e in api.entities if isinstance(e, GeErdSensor)]
+            _LOGGER.debug(f'API {api.mac_addr}: Has {len(sensor_entities)} sensor entities')
+            for entity in sensor_entities:
+                _LOGGER.debug(f'API {api.mac_addr}: Sensor entity {entity.unique_id} - registered: {registry.async_is_registered(entity.entity_id)}')
+        
         entities = [
             entity
             for api in apis
             for entity in api.entities
-            if isinstance(entity, GeErdSensor) and entity.erd_code in api.appliance._property_cache
+            if isinstance(entity, GeErdSensor)
             if not registry.async_is_registered(entity.entity_id)
         ]
         _LOGGER.debug(f'Found {len(entities):d} unregistered sensors')
