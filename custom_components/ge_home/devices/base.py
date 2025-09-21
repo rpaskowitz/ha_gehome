@@ -131,10 +131,16 @@ class ApplianceApi:
     def build_entities_list(self) -> None:
         """Build the entities list, adding anything new."""
         from ..entities import GeErdEntity, GeErdButton
+        _LOGGER.debug(f"All entities count: {len(all_entities)}")
+        _LOGGER.debug(f"All entities types: {[type(e).__name__ for e in all_entities]}")
+
         entities = [
             e for e in self.get_all_entities()
             if not isinstance(e, GeErdEntity) or isinstance(e, GeErdButton) or e.erd_code in self.appliance.known_properties
         ]
+
+        _LOGGER.debug(f"Filtered entities count: {len(entities)}")
+        _LOGGER.debug(f"Filtered entities types: {[type(e).__name__ for e in entities]}")
 
         for entity in entities:
             if entity.unique_id not in self._entities:
